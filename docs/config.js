@@ -1,10 +1,10 @@
-// Configuration for GitHub Pages version
+// Configuration for GitHub Pages version (Secure)
 const CONFIG = {
-    // Gemini API Key - 本番用
-    GEMINI_API_KEY: 'AIzaSyDRDRxCcgGJ_H46VLIGKUPqCAtSnJzu0Z4',
+    // Cloudflare Worker Proxy Endpoint (APIキーは完全に保護されています)
+    // あなた自身のCloudflare Worker URLに置き換えてください
+    PROXY_ENDPOINT: 'https://positive-text-api.YOUR-SUBDOMAIN.workers.dev/transform',
     
-    // API Settings
-    API_ENDPOINT: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent',
+    // 注: APIキーはCloudflare Worker側で安全に管理されます
     
     // Generation Settings
     GENERATION_CONFIG: {

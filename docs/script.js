@@ -101,57 +101,21 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Gemini API呼び出し（タイムアウト付き）
+    // Cloudflare Worker Proxy経由でテキスト変換（セキュア版）
     async function transformTextWithTimeout(text, timeout = CONFIG.REQUEST_TIMEOUT) {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), timeout);
 
         try {
-            const prompt = `以下のテキストを、より前向きで心が明るくなるような表現に書き直してください。
-本来の意味を保ちながら、ネガティブな感情や状況を成長、学習、またはポジティブな変化の機会として変換してください。
-回答は簡潔で励みになるようにしてください。
-
-重要: 必ず日本語で回答してください。
-
-テキスト: ${text}
-
-ポジティブな書き直し:`;
-
-            const requestBody = {
-                contents: [{
-                    parts: [{
-                        text: prompt
-                    }]
-                }],
-                generationConfig: CONFIG.GENERATION_CONFIG,
-                safetySettings: [
-                    {
-                        category: "HARM_CATEGORY_HARASSMENT",
-                        threshold: "BLOCK_MEDIUM_AND_ABOVE"
-                    },
-                    {
-                        category: "HARM_CATEGORY_HATE_SPEECH",
-                        threshold: "BLOCK_MEDIUM_AND_ABOVE"
-                    },
-                    {
-                        category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
-                        threshold: "BLOCK_MEDIUM_AND_ABOVE"
-                    },
-                    {
-                        category: "HARM_CATEGORY_DANGEROUS_CONTENT",
-                        threshold: "BLOCK_MEDIUM_AND_ABOVE"
-                    }
-                ]
-            };
-
+            // Cloudflare Workerプロキシにリクエスト
             const response = await fetch(
-                `${CONFIG.API_ENDPOINT}?key=${CONFIG.GEMINI_API_KEY}`,
+                CONFIG.PROXY_ENDPOINT,
                 {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify(requestBody),
+                    body: JSON.stringify({ text }),
                     signal: controller.signal
                 }
             );
@@ -163,14 +127,17 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             if (!response.ok) {
-                console.error('API Error:', response.status, response.statusText);
+                console.error('Proxy Error:', response.status, response.statusText);
                 throw new Error('API_ERROR');
             }
 
             const data = await response.json();
             
-            if (data.candidates && data.candidates[0] && data.candidates[0].content) {
-                return data.candidates[0].content.parts[0].text;
+            if (data.transformedText) {
+                return data.transformedText;
+            } else if (data.error) {
+                console.error('Worker error:', data.error);
+                throw new Error('API_ERROR');
             } else {
                 throw new Error('INVALID_RESPONSE');
             }
