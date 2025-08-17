@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Positive Perspective - Transform Your Thoughts</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Positive Perspective</h1>
+            <p class="subtitle">Transform your thoughts into something uplifting</p>
+        </header>
+        
+        <main>
+            <div class="input-section">
+                <label for="textInput">Share your thoughts:</label>
+                <textarea 
+                    id="textInput" 
+                    placeholder="Type anything on your mind..."
+                    rows="4"
+                ></textarea>
+                <button id="submitBtn" type="button">
+                    <span>Transform</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2v20M2 12h20M5 5l14 14M19 5L5 19" opacity="0.3"/>
+                        <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                </button>
+                
+                <!-- Loading indicator -->
+                <div id="loadingIndicator" class="loading-indicator hidden">
+                    <div class="loading-spinner"></div>
+                    <p>Transforming your thoughts...</p>
+                </div>
+                
+                <!-- Error message -->
+                <div id="errorMessage" class="error-message hidden"></div>
+            </div>
+            
+            <div id="outputSection" class="output-section hidden">
+                <h2>Your Positive Perspective:</h2>
+                <div id="outputText" class="output-text"></div>
+                <button id="resetBtn" class="reset-btn" type="button">Try Another</button>
+            </div>
+        </main>
+        
+        <footer>
+            <p>Every perspective has a silver lining</p>
+        </footer>
+    </div>
+    
+    <script src="config.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
