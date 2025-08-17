@@ -1,15 +1,9 @@
-// GitHub Pages版 - APIキーをユーザーが入力する安全な設計
+// GitHub Pages版 - シンプルで使いやすいバージョン
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 Positive Text Transformer - GitHub Pages Version');
-    console.log('🔒 APIキーはローカルストレージに安全に保存されます');
+    console.log('🚀 Positive Text Transformer - Simple Version');
+    console.log('✨ すぐに使えます！テキストを入力して変換ボタンをクリック');
     
     // DOM要素
-    const apiKeySection = document.getElementById('apiKeySection');
-    const mainApp = document.getElementById('mainApp');
-    const apiKeyInput = document.getElementById('apiKeyInput');
-    const saveApiKeyBtn = document.getElementById('saveApiKeyBtn');
-    const changeApiKeyBtn = document.getElementById('changeApiKeyBtn');
-    
     const textInput = document.getElementById('textInput');
     const submitBtn = document.getElementById('submitBtn');
     const submitBtnText = submitBtn.querySelector('span');
@@ -24,67 +18,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const charCount = document.getElementById('charCount');
     const charCounter = document.querySelector('.char-counter');
 
-    // APIキー管理
-    const API_KEY_STORAGE_KEY = 'gemini_api_key';
-    let currentApiKey = null;
-
-    // 初期化時にAPIキーをチェック
-    function initialize() {
-        const savedApiKey = localStorage.getItem(API_KEY_STORAGE_KEY);
-        if (savedApiKey) {
-            currentApiKey = savedApiKey;
-            showMainApp();
-        } else {
-            showApiKeySection();
-        }
-    }
-
-    // APIキー入力画面を表示
-    function showApiKeySection() {
-        apiKeySection.classList.remove('hidden');
-        mainApp.classList.add('hidden');
-        apiKeyInput.focus();
-    }
-
-    // メインアプリを表示
-    function showMainApp() {
-        apiKeySection.classList.add('hidden');
-        mainApp.classList.remove('hidden');
-        textInput.focus();
-    }
-
-    // APIキーを保存
-    function saveApiKey() {
-        const apiKey = apiKeyInput.value.trim();
-        
-        if (!apiKey) {
-            showError('APIキーを入力してください');
-            return;
-        }
-        
-        if (!apiKey.startsWith('AIza')) {
-            showError('無効なAPIキー形式です。Google AI StudioからAPIキーを取得してください。');
-            return;
-        }
-        
-        // ローカルストレージに保存
-        localStorage.setItem(API_KEY_STORAGE_KEY, apiKey);
-        currentApiKey = apiKey;
-        
-        // UIを切り替え
-        showMainApp();
-        showSuccess('APIキーが設定されました！');
-    }
-
-    // APIキーを変更
-    function changeApiKey() {
-        if (confirm('現在のAPIキーを変更しますか？')) {
-            localStorage.removeItem(API_KEY_STORAGE_KEY);
-            currentApiKey = null;
-            apiKeyInput.value = '';
-            showApiKeySection();
-        }
-    }
+    // レート制限用の追跡
+    let requestTimestamps = [];
 
     // 文字数カウンター更新
     function updateCharCount() {
@@ -103,14 +38,16 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // レート制限
-    let requestTimestamps = [];
+    // レート制限チェック
     function checkRateLimit() {
         const now = Date.now();
-        const oneMinute = 60 * 1000;
+        const oneMinute = CONFIG.RATE_LIMIT.windowDuration;
+        
+        // 1分以上古いタイムスタンプを削除
         requestTimestamps = requestTimestamps.filter(timestamp => now - timestamp < oneMinute);
         
-        if (requestTimestamps.length >= 10) {
+        // 制限チェック
+        if (requestTimestamps.length >= CONFIG.RATE_LIMIT.maxRequestsPerMinute) {
             return false;
         }
         
@@ -150,7 +87,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    function showSuccess(message = '✨ 変換が完了しました！') {
+    function showSuccess(message = CONFIG.MESSAGES.SUCCESS) {
         if (successMessage) {
             successMessage.textContent = message;
             successMessage.classList.remove('hidden');
@@ -164,9 +101,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Gemini API呼び出し
-    async function transformText(text) {
-        const prompt = `以下のテキストを、より前向きで心が明るくなるような表現に書き直してください。
+    // Gemini API呼び出し（タイムアウト付き）
+    async function transformTextWithTimeout(text, timeout = CONFIG.REQUEST_TIMEOUT) {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+        try {
+            const prompt = `以下のテキストを、より前向きで心が明るくなるような表現に書き直してください。
 本来の意味を保ちながら、ネガティブな感情や状況を成長、学習、またはポジティブな変化の機会として変換してください。
 回答は簡潔で励みになるようにしてください。
 
@@ -176,59 +117,53 @@ document.addEventListener('DOMContentLoaded', function() {
 
 ポジティブな書き直し:`;
 
-        const requestBody = {
-            contents: [{
-                parts: [{
-                    text: prompt
-                }]
-            }],
-            generationConfig: {
-                temperature: 0.7,
-                topK: 40,
-                topP: 0.95,
-                maxOutputTokens: 1024,
-            },
-            safetySettings: [
-                {
-                    category: "HARM_CATEGORY_HARASSMENT",
-                    threshold: "BLOCK_MEDIUM_AND_ABOVE"
-                },
-                {
-                    category: "HARM_CATEGORY_HATE_SPEECH",
-                    threshold: "BLOCK_MEDIUM_AND_ABOVE"
-                },
-                {
-                    category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
-                    threshold: "BLOCK_MEDIUM_AND_ABOVE"
-                },
-                {
-                    category: "HARM_CATEGORY_DANGEROUS_CONTENT",
-                    threshold: "BLOCK_MEDIUM_AND_ABOVE"
-                }
-            ]
-        };
+            const requestBody = {
+                contents: [{
+                    parts: [{
+                        text: prompt
+                    }]
+                }],
+                generationConfig: CONFIG.GENERATION_CONFIG,
+                safetySettings: [
+                    {
+                        category: "HARM_CATEGORY_HARASSMENT",
+                        threshold: "BLOCK_MEDIUM_AND_ABOVE"
+                    },
+                    {
+                        category: "HARM_CATEGORY_HATE_SPEECH",
+                        threshold: "BLOCK_MEDIUM_AND_ABOVE"
+                    },
+                    {
+                        category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+                        threshold: "BLOCK_MEDIUM_AND_ABOVE"
+                    },
+                    {
+                        category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+                        threshold: "BLOCK_MEDIUM_AND_ABOVE"
+                    }
+                ]
+            };
 
-        try {
             const response = await fetch(
-                `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${currentApiKey}`,
+                `${CONFIG.API_ENDPOINT}?key=${CONFIG.GEMINI_API_KEY}`,
                 {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify(requestBody)
+                    body: JSON.stringify(requestBody),
+                    signal: controller.signal
                 }
             );
 
-            if (response.status === 403 || response.status === 401) {
-                throw new Error('API_KEY_INVALID');
-            }
+            clearTimeout(timeoutId);
 
             if (response.status === 429) {
                 throw new Error('RATE_LIMIT');
             }
 
             if (!response.ok) {
+                console.error('API Error:', response.status, response.statusText);
                 throw new Error('API_ERROR');
             }
 
@@ -241,7 +176,12 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
         } catch (error) {
-            console.error('API Error:', error);
+            clearTimeout(timeoutId);
+            
+            if (error.name === 'AbortError') {
+                throw new Error('TIMEOUT');
+            }
+            
             throw error;
         }
     }
@@ -251,29 +191,30 @@ document.addEventListener('DOMContentLoaded', function() {
         const inputText = textInput.value.trim();
         
         if (!inputText) {
-            showError('変換するテキストを入力してください。');
+            showError(CONFIG.MESSAGES.NO_TEXT);
             return;
         }
 
-        if (!currentApiKey) {
-            showError('APIキーが設定されていません。');
-            showApiKeySection();
+        if (inputText.length > CONFIG.MAX_INPUT_LENGTH) {
+            showError(CONFIG.MESSAGES.TOO_LONG);
             return;
         }
 
         if (!checkRateLimit()) {
-            showError('リクエストが多すぎます。しばらく待ってから再試行してください。');
+            showError(CONFIG.MESSAGES.RATE_LIMIT);
             return;
         }
 
         showLoading();
 
         try {
-            const positiveText = await transformText(inputText);
+            const positiveText = await transformTextWithTimeout(inputText);
             
+            // 結果を表示
             outputText.textContent = positiveText;
             outputSection.classList.remove('hidden');
             
+            // アニメーション
             outputText.style.animation = 'none';
             setTimeout(() => {
                 outputText.style.animation = 'slideUp 0.5s ease-out';
@@ -284,15 +225,16 @@ document.addEventListener('DOMContentLoaded', function() {
             showSuccess();
             
         } catch (error) {
-            let errorMsg = 'エラーが発生しました。';
+            console.error('Transform error:', error);
             
-            if (error.message === 'API_KEY_INVALID') {
-                errorMsg = 'APIキーが無効です。正しいキーを設定してください。';
-                setTimeout(() => changeApiKey(), 2000);
-            } else if (error.message === 'RATE_LIMIT') {
-                errorMsg = 'API制限に達しました。しばらく待ってから再試行してください。';
-            } else if (error.message === 'API_ERROR') {
-                errorMsg = 'APIエラーが発生しました。しばらく待ってから再試行してください。';
+            let errorMsg = CONFIG.MESSAGES.API_ERROR;
+            
+            if (error.message === 'RATE_LIMIT') {
+                errorMsg = CONFIG.MESSAGES.RATE_LIMIT;
+            } else if (error.message === 'TIMEOUT') {
+                errorMsg = 'リクエストがタイムアウトしました。もう一度お試しください。';
+            } else if (error.message === 'NETWORK_ERROR' || error.name === 'TypeError') {
+                errorMsg = CONFIG.MESSAGES.NETWORK_ERROR;
             }
             
             showError(errorMsg);
@@ -323,41 +265,48 @@ document.addEventListener('DOMContentLoaded', function() {
                     copyBtn.textContent = 'コピー';
                     copyBtn.classList.remove('copied');
                 }, 2000);
+            }).catch(() => {
+                fallbackCopy(textToCopy);
             });
         } else {
-            // フォールバック
-            const textArea = document.createElement('textarea');
-            textArea.value = textToCopy;
-            textArea.style.position = 'fixed';
-            textArea.style.left = '-999999px';
-            document.body.appendChild(textArea);
-            textArea.select();
-            document.execCommand('copy');
-            document.body.removeChild(textArea);
-            
-            copyBtn.textContent = 'コピー完了！';
-            setTimeout(() => {
-                copyBtn.textContent = 'コピー';
-            }, 2000);
+            fallbackCopy(textToCopy);
         }
     }
 
+    // フォールバックコピー
+    function fallbackCopy(text) {
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        
+        try {
+            document.execCommand('copy');
+            copyBtn.textContent = 'コピー完了！';
+            copyBtn.classList.add('copied');
+            setTimeout(() => {
+                copyBtn.textContent = 'コピー';
+                copyBtn.classList.remove('copied');
+            }, 2000);
+        } catch (err) {
+            console.error('コピー失敗:', err);
+            showError('コピーに失敗しました。手動でテキストを選択してコピーしてください。');
+        }
+        
+        document.body.removeChild(textArea);
+    }
+
     // イベントリスナー
-    saveApiKeyBtn.addEventListener('click', saveApiKey);
-    changeApiKeyBtn.addEventListener('click', changeApiKey);
     submitBtn.addEventListener('click', handleSubmit);
     resetBtn.addEventListener('click', handleReset);
     copyBtn.addEventListener('click', handleCopy);
     
     // 文字数カウンター
     textInput.addEventListener('input', updateCharCount);
-    
-    // Enterキーでも送信
-    apiKeyInput.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            saveApiKey();
-        }
-    });
     
     // Ctrl+Enterで送信
     textInput.addEventListener('keydown', function(e) {
@@ -366,11 +315,20 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    // ボタンの透明度調整
+    textInput.addEventListener('input', function() {
+        if (this.value.trim() && !submitBtn.disabled) {
+            submitBtn.style.opacity = '1';
+        } else {
+            submitBtn.style.opacity = '0.8';
+        }
+    });
+
     // 初期化
-    initialize();
     updateCharCount();
+    textInput.focus();
     
     console.log('✅ アプリケーションが正常に読み込まれました');
-    console.log('🔒 APIキーはブラウザのローカルストレージに安全に保存されます');
     console.log('📍 GitHub Pages: https://kator-pixel.github.io/positive-text-app/');
+    console.log('🎯 使い方: テキストを入力して「変換する」をクリック！');
 });
