@@ -1,4 +1,6 @@
 // Configuration for GitHub Pages version (Secure)
+// Version: 2.0.0 - Cloudflare Worker Proxy
+// Updated: 2024-12-19
 const CONFIG = {
     // Cloudflare Worker Proxy Endpoint (APIキーは完全に保護されています)
     PROXY_ENDPOINT: 'https://positive-text-api.kato-r.workers.dev/transform',

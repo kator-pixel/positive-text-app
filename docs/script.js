@@ -1,7 +1,10 @@
 // GitHub Pages版 - シンプルで使いやすいバージョン
+// Version: 2.0.0 - Cloudflare Worker Proxy Version
+// NO API KEY REQUIRED - Secure Proxy
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 Positive Text Transformer - Simple Version');
-    console.log('✨ すぐに使えます！テキストを入力して変換ボタンをクリック');
+    console.log('🚀 Positive Text Transformer - Cloudflare Worker Version 2.0.0');
+    console.log('✨ APIキー不要！Cloudflare Worker経由で安全に通信');
+    console.log('🔒 PROXY_ENDPOINT:', CONFIG.PROXY_ENDPOINT);
     
     // DOM要素
     const textInput = document.getElementById('textInput');
