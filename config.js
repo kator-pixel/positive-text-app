@@ -1,51 +1,35 @@
-// Configuration for Gemini API
+// Configuration for GitHub Pages version (Secure)
 const CONFIG = {
-    // Replace with your actual API key from Google AI Studio
-    // Get your API key from: https://aistudio.google.com/app/apikey
-    GEMINI_API_KEY: 'AIzaSyClK88BePIU8Hp9wJtdByrDk9X1PE7oc-U',
+    // Cloudflare Worker Proxy Endpoint (APIキーは完全に保護されています)
+    PROXY_ENDPOINT: 'https://positive-text-api.kato-r.workers.dev/transform',
     
-    // API endpoint for Gemini Pro (v1beta format)
-    // Using the correct endpoint format for Google AI Studio
-    GEMINI_API_URL: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent',
+    // 注: APIキーはCloudflare Worker側で安全に管理されます
     
-    // Alternative endpoints to try if the above doesn't work
-    ALTERNATIVE_ENDPOINTS: {
-        gemini_pro: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent',
-        gemini_1_5_pro: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent',
-        gemini_1_5_flash: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent'
-    },
-    
-    // API settings
-    API_SETTINGS: {
+    // Generation Settings
+    GENERATION_CONFIG: {
         temperature: 0.7,
         topK: 40,
         topP: 0.95,
         maxOutputTokens: 1024,
     },
     
-    // Rate limiting settings
+    // Rate Limiting (Client-side)
     RATE_LIMIT: {
-        maxRequestsPerMinute: 60,
-        retryDelay: 1000, // milliseconds
-        maxRetries: 3
+        maxRequestsPerMinute: 10,
+        windowDuration: 60000
     },
     
-    // Timeout settings
-    REQUEST_TIMEOUT: 30000, // 30 seconds
+    // UI Settings
+    MAX_INPUT_LENGTH: 5000,
+    REQUEST_TIMEOUT: 30000,
     
-    // Error messages
-    ERROR_MESSAGES: {
-        API_KEY_MISSING: 'API key is not configured. Please add your Gemini API key in config.js',
-        NETWORK_ERROR: 'Unable to connect to the API. Please check your internet connection and try again.',
-        RATE_LIMIT: 'Too many requests. Please wait a moment and try again.',
-        TIMEOUT: 'The request took too long. Please try again with shorter text.',
-        GENERIC: 'Something went wrong. Please try again later.',
-        INVALID_RESPONSE: 'Received an invalid response from the API. Please try again.',
-        MODEL_NOT_FOUND: 'The AI model endpoint was not found. Please check the console for details.'
+    // Messages
+    MESSAGES: {
+        NO_TEXT: 'テキストを入力してください',
+        TOO_LONG: 'テキストが長すぎます（5000文字以内）',
+        RATE_LIMIT: 'リクエストが多すぎます。しばらく待ってから再試行してください',
+        API_ERROR: 'エラーが発生しました。しばらく待ってから再試行してください',
+        NETWORK_ERROR: 'ネットワークエラーが発生しました',
+        SUCCESS: '✨ 変換が完了しました！'
     }
 };
-
-// Validate API key on load
-if (CONFIG.GEMINI_API_KEY === 'YOUR_GEMINI_API_KEY_HERE') {
-    console.warn('Please configure your Gemini API key in config.js');
-}

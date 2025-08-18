@@ -92,10 +92,23 @@ textarea::placeholder {
     color: #999;
 }
 
+.char-counter {
+    text-align: right;
+    font-size: 0.9rem;
+    color: #666;
+    margin-top: 5px;
+    margin-bottom: 15px;
+}
+
+.char-counter.warning {
+    color: #ff6b6b;
+    font-weight: 500;
+}
+
 #submitBtn {
     width: 100%;
     padding: 15px 30px;
-    margin-top: 15px;
+    margin-top: 10px;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     border: none;
@@ -110,7 +123,7 @@ textarea::placeholder {
     gap: 10px;
 }
 
-#submitBtn:hover {
+#submitBtn:hover:not(:disabled) {
     transform: translateY(-2px);
     box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
 }
@@ -166,24 +179,47 @@ textarea::placeholder {
     color: #333;
     border-left: 4px solid #667eea;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    margin-bottom: 15px;
 }
 
-.reset-btn {
-    margin-top: 15px;
+.action-buttons {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.reset-btn, .copy-btn {
     padding: 10px 20px;
-    background: white;
-    color: #667eea;
-    border: 2px solid #667eea;
     border-radius: 8px;
     font-size: 1rem;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.3s ease;
+    border: 2px solid #667eea;
+}
+
+.reset-btn {
+    background: white;
+    color: #667eea;
 }
 
 .reset-btn:hover {
     background: #667eea;
     color: white;
+}
+
+.copy-btn {
+    background: #667eea;
+    color: white;
+}
+
+.copy-btn:hover {
+    background: #5a6fd8;
+}
+
+.copy-btn.copied {
+    background: #28a745;
+    border-color: #28a745;
 }
 
 .hidden {
@@ -315,6 +351,135 @@ footer p {
     color: #999;
     font-size: 0.9rem;
     font-style: italic;
+    margin-bottom: 5px;
+}
+
+.security-note {
+    font-size: 0.8rem !important;
+    color: #28a745 !important;
+    font-weight: 500 !important;
+}
+
+/* API Key Section Styles */
+.api-key-section {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.api-key-card {
+    background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.api-key-card h2 {
+    color: #667eea;
+    margin-bottom: 15px;
+}
+
+.setup-steps {
+    margin: 20px 0;
+    padding-left: 20px;
+}
+
+.setup-steps li {
+    margin-bottom: 10px;
+    color: #555;
+}
+
+.setup-steps a {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.setup-steps a:hover {
+    text-decoration: underline;
+}
+
+.api-key-input-group {
+    display: flex;
+    gap: 10px;
+    margin: 20px 0;
+}
+
+.api-key-input {
+    flex: 1;
+    padding: 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-family: monospace;
+}
+
+.api-key-input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.save-btn {
+    padding: 12px 30px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.save-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+}
+
+.settings-footer {
+    margin-top: 20px;
+    text-align: center;
+    padding-top: 20px;
+    border-top: 1px solid #e0e0e0;
+}
+
+.change-key-btn {
+    padding: 8px 16px;
+    background: white;
+    color: #667eea;
+    border: 1px solid #667eea;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.change-key-btn:hover {
+    background: #667eea;
+    color: white;
+}
+
+.github-note {
+    margin-top: 10px;
+}
+
+.github-note a {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+/* Success message styles */
+.success-message {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    padding: 15px 20px;
+    border-radius: 8px;
+    margin-top: 15px;
+    font-size: 1rem;
+    text-align: center;
+    animation: slideDown 0.3s ease-out;
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.2);
 }
 
 @media (max-width: 600px) {
@@ -328,5 +493,13 @@ footer p {
     
     textarea {
         font-size: 16px;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+    }
+    
+    .reset-btn, .copy-btn {
+        width: 100%;
     }
 }
