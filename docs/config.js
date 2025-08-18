@@ -1,8 +1,7 @@
 // Configuration for GitHub Pages version (Secure)
 const CONFIG = {
     // Cloudflare Worker Proxy Endpoint (APIキーは完全に保護されています)
-    // あなた自身のCloudflare Worker URLに置き換えてください
-    PROXY_ENDPOINT: 'https://positive-text-api.YOUR-SUBDOMAIN.workers.dev/transform',
+    PROXY_ENDPOINT: 'https://positive-text-api.kato-r.workers.dev/transform',
     
     // 注: APIキーはCloudflare Worker側で安全に管理されます
     
