@@ -1,0 +1,19 @@
+name = "positive-text-api"
+main = "worker.js"
+compatibility_date = "2024-01-01"
+
+# 環境変数（実際の値はCloudflareダッシュボードで設定）
+[vars]
+# GEMINI_API_KEY = "your-api-key-here" # ダッシュボードで設定
+
+# ルート設定
+[routes]
+pattern = "positive-text-api.*.workers.dev/*"
+zone_name = ""
+
+# 本番環境設定
+[env.production]
+name = "positive-text-api"
+routes = [
+  { pattern = "positive-text-api.*.workers.dev/*", zone_name = "" }
+]
